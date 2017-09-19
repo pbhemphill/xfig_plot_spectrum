@@ -185,9 +185,9 @@ define xfig_plot_spectrum()
   variable topPanelFrac = qualifier("topPanelFrac",0.5);
   % Log plots?
   variable xLog = qualifier("xlog",0);
-  if(_isnull(xLog) or xLog) xLog = 1;
+  if(_isnull(xLog) || xLog) xLog = 1;
   variable yLog = qualifier("ylog",0);
-  if(_isnull(yLog) or yLog) yLog = 1;
+  if(_isnull(yLog) || yLog) yLog = 1;
   % Custom ranges?
   variable xRange = qualifier("xrange",NULL);
   variable yRange = qualifier("yrange",NULL);
