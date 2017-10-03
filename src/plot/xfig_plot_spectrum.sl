@@ -137,7 +137,7 @@ define xfig_plot_spectrum()
 %\qualifier{xlog}{: Axes are linear by default. If "xlog" is set, or if it is set to a nonzero number, the x-axis will be logarithmic. If "xlog" is not set, or is set to zero, the x-axis will be linear.}
 %\qualifier{ylog}{: See xlog; sets log/linear scale for y-axis on top panel. Residual plots always have linear y-axes.}
 %\qualifier{unit}{: String_Type, either "keV" (energy, default) or "A" (wavelength).}
-%\qualifier{xlabel}{: String_Type, label for x-axis, default depends on units. If unit="keV", "Energy (keV)"; if unit="A", "Wavelength (\\AA)".}
+%\qualifier{xlabel}{: String_Type, label for x-axis, default depends on units. If unit="keV", "Energy (keV)"; if unit="A", "Wavelength (\\AA)". Set to NULL for no label.}
 %\qualifier{ylabel}{: String_Type, label for y-axis of spectrum, default depends on units. If unit="keV", "Counts s$^-1$ keV$^-1$"; if unit="A", "Counts s$^{-1}$ \\AA$^{-1}$".}
 %\qualifier{rlabel}{: String_Type, label for y-axis of residuals. If the "ratio" qualifier is set, default is "Ratio", otherwise default is "$\\chi$".}
 %\qualifier{labels}{: String_Type[], labels for individual panels.}
