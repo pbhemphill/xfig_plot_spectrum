@@ -451,11 +451,17 @@ private define xfps_plot_data(pl,spec,popt) {
       % then draw a downward arrow - down to arrowY[0] of the way from the
       % bottom axis, starting either at the top of the error bar or arrowY[1]
       % of the way from the bottom axis, whichever is larger
+      variable yFrac;
       _for k (0,length(ndx)-1,1) {
         x = (dlo[ndx[k]]+dhi[ndx[k]])/2.0;
-        y = dval[ndx[k]];
+        y = dval[ndx[k]] + derr[ndx[k]];
+        if(popt.yLog) {
+          yFrac = (log10(y)-log10(w[-2]))/(log10(w[-1])-log10(w[-2]));
+        } else {
+          yFrac = (y-w[-2])/(w[-1]-w[-2]);
+        }
         ymin = popt.arrowY[0];
-        ymax = popt.arrowY[1];
+        ymax = max([popt.arrowY[1],yFrac]);
         pl.plot([x,x],[ymax,ymin];world10,size=popt.symsize[j],color=popt.colors[j],depth=popt.dataDepth[j],forward_arrow);
       }
     }
@@ -469,8 +475,13 @@ private define xfps_plot_data(pl,spec,popt) {
       % of the way from the top axis, whichever is smaller
       _for k (0,length(ndx)-1,1) {
         x = (dlo[ndx[k]]+dhi[ndx[k]])/2.0;
-        y = dval[ndx[k]];
-        ymin = 1.0-popt.arrowY[1];
+        y = dval[ndx[k]] - derr[ndx[k]];
+        if(popt.yLog) {
+          yFrac = (log10(y)-log10(w[-2]))/(log10(w[-1])-log10(w[-2]));
+        } else {
+          yFrac = (y-w[-2])/(w[-1]-w[-2]);
+        }
+        ymin = min([1.0-popt.arrowY[1],yFrac]);
         ymax = 1.0-popt.arrowY[0];
         pl.plot([x,x],[ymin,ymax];world10,size=popt.symsize[j],color=popt.colors[j],depth=popt.dataDepth[j],forward_arrow);
       }
