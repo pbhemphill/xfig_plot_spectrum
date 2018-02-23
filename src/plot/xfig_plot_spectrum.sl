@@ -96,9 +96,9 @@ define xfig_plot_spectrum()
 %   it should be a single letter. If the "labels" qualifier is not present at
 %   all, the panels will be unlabeled. The x/y positions of the labels can be
 %   set via the label_x and label_y qualifiers, which should be arrays of
-%   Double_Type values indicating the positions of the lower-left corners of
+%   Double_Type values indicating the positions of the lower-right corners of
 %   the labels for each panel in 'world0' coordinates for that panel (see
-%   'xfig_plot--wcs'). By default these are [0.94,0.95] for the data+model
+%   'xfig_plot--wcs'). By default these are [0.94,0.90] for the data+model
 %   panel and [0.94,0.78] for the residuals.
 %
 %   The "gaps" qualifier lets you specify where the model should not be plotted
@@ -125,11 +125,12 @@ define xfig_plot_spectrum()
 %\qualifier{dsym}{: String_Type[] or Integer_Type[], xfig symbols for data for each spectrum plotted, defaults to "point"}
 %\qualifier{symsize}{: Integer_Type[], size of symbols for each spectrum plotted. Can be a single value or an array (one element for each spectrum).}
 %\qualifier{mstyle}{: Integer_Type[], xfig linestyle for overplotted best-fit model for each spectrum. mstyle = -1 plots the model as a histogram. As with symsize, can be single value or array. Default -1}
+%\qualifier{mwidth}{: Integer_Type[], xfig line width for overplotted best-fit model. As with symsize, can be single value or array. Default 1.}
 %\qualifier{mscale}{: Double_Type[], multiplicative scale for model (e.g., if you want to plot your model above your data points). Single value or array.}
 %\qualifier{dataDepth}{: Integer_Type[], xfig depth for data points, either a single value or an array specifying the depth for each spectrum. Default 1}
 %\qualifier{modelDepth}{: Integer_Type[], xfig depth for model lines. See dataDepth. Default 0 (this means models are plotted over data by default)}
 %\qualifier{ratio}{: If present, residuals are ratio residuals, otherwise residuals are assumed to be some variant of data-model.}
-%\qualifier{no_residuals}{If set, no residuals are plotted.}
+%\qualifier{no_residuals}{: If set, no residuals are plotted.}
 %\qualifier{gaps}{: List_Type, indicates where gaps in an instrument's spectrum mean the model should not be plotted.}
 %\qualifier{xrange}{: Double_Type[2], range for x-axis (default autoscaled)}
 %\qualifier{yrange}{: Double_Type[2], range for y-axis of top panel (default autoscaled)}
@@ -215,6 +216,8 @@ define xfig_plot_spectrum()
   if(length(symsize) == 1) symsize = Double_Type[numInst] + symsize[0];
   variable mstyle = qualifier("mstyle",Integer_Type[numInst]-1);
   if(length(mstyle) == 1) mstyle = Integer_Type[numInst] + mstyle[0];
+  variable mwidth = qualifier("mwidth",Integer_Type[numInst]+1);
+  if(length(mwidth) == 1) mwidth = Integer_Type[numInst] + mwidth[0];
   % Scaling for model
   variable mscale = qualifier("mscale",Double_Type[numInst]+1.0);
   if(length(mscale) == 1) mscale = Double_Type[numInst] + mscale[0];
@@ -231,7 +234,7 @@ define xfig_plot_spectrum()
   variable firstPanelLabel = qualifier("firstPanelLabel",'a'); % using a char so I can increment it later
   if(typeof(firstPanelLabel) == String_Type) firstPanelLabel = firstPanelLabel[0];
   variable labelX = qualifier("label_x",Double_Type[nPanels]+0.94);
-  variable labelY = qualifier("label_y",Double_Type[nPanels]+0.78); labelY[0] = 0.94;
+  variable labelY = qualifier("label_y",[0.90,Double_Type[nPanels-1]+0.78]);
   variable labels = String_Type[nPanels];
   if(qualifier_exists("labels")) {
     labels = qualifier("labels",NULL);
@@ -252,10 +255,11 @@ define xfig_plot_spectrum()
 
   % Stick all the plot options into a struct to make subroutines easier to write
   variable plotOptions = struct{
-    colors=colors,mcolors=mcolors,dsym=dsym,symsize=symsize,mstyle=mstyle,mscale=mscale,
-    dataDepth=dataDepth,modelDepth=modelDepth,arrowY=arrowY,xLog=xLog,yLog=yLog,gaps=gaps,
-    ratio=ratio,totWidth=totWidth,totHeight=totHeight,topPanelFrac=topPanelFrac,
-    nores=nores,nPanels=nPanels,yrange=yRange,rrange=rRange,xrange=xRange
+    colors=colors,mcolors=mcolors,dsym=dsym,symsize=symsize,mstyle=mstyle,
+    mscale=mscale,mwidth=mwidth,dataDepth=dataDepth,modelDepth=modelDepth,
+    arrowY=arrowY,xLog=xLog,yLog=yLog,gaps=gaps,ratio=ratio,totWidth=totWidth,
+    totHeight=totHeight,topPanelFrac=topPanelFrac,nores=nores,nPanels=nPanels,
+    yrange=yRange,rrange=rRange,xrange=xRange
   };
 
   variable pl = Struct_Type[nPanels];
@@ -275,7 +279,7 @@ define xfig_plot_spectrum()
       pl[i] = xfps_plot_res(pl[i],spec,plotOptions);
     }
     if(not(_isnull(labels[i])) && not(string_match(labels[i],`^[ \t\n]*$`)))
-      pl[i].xylabel(labelX[i],labelY[i],labels[i],-0.5,-0.5;world0);
+      pl[i].xylabel(labelX[i],labelY[i],labels[i],0.5,-0.5;world0);
   }
   return pl;
 }
@@ -528,10 +532,11 @@ private define xfps_plot_model(pl,spec,popt) {
         if(popt.mstyle[j] == -1) {
           pl.hplot(dlo[ndx],mval[ndx];
             color=popt.mcolors[j],depth=popt.modelDepth[j],
-            y_first=mval[ndx[0]],y_last=mval[ndx[-1]]);
+            width=popt.mwidth[j],y_first=mval[ndx[0]],y_last=mval[ndx[-1]]);
         } else {
           pl.plot((dlo[ndx]+dhi[ndx])/2.0,mval[ndx];
-            line=popt.mstyle[j],color=popt.mcolors[j],depth=popt.modelDepth[j]);
+            line=popt.mstyle[j],width=popt.mwidth[j],
+            color=popt.mcolors[j],depth=popt.modelDepth[j]);
         }
       }
     }
